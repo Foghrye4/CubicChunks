@@ -54,6 +54,7 @@ import static cubicchunks.util.Coords.localToBlock;
  * THIS SHOULD ONLY EVER BE USED ONCE PER CUBE.
  */
 //TODO: make it also update blocklight
+//TODO: Find some way to send worldgen light updates to client. Can FirstLightProcessor be used for client updates?
 public class FirstLightProcessor {
 	//mutableBlockPos variable to avoid creating thousands of instances of BlockPos
 	private BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();

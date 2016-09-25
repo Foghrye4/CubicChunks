@@ -23,10 +23,12 @@
  */
 package cubicchunks.asm.mixin.core.common;
 
+import cubicchunks.CubicChunks;
 import cubicchunks.world.ICubicWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,6 +37,7 @@ import org.spongepowered.asm.mixin.injection.Group;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static cubicchunks.asm.JvmNames.WORLD_GET_PERSISTENT_CHUNKS;
@@ -94,4 +97,12 @@ public abstract class MixinWorld_Tick implements ICubicWorld {
 		updateEntity_entityPosX = MathHelper.floor_double(entity.posX);
 		updateEntity_entityPosZ = MathHelper.floor_double(entity.posZ);
 	}
+	@Inject(method = "checkLightFor", at = @At(value = "HEAD"), cancellable = true)
+	public void stopLightUpdates(EnumSkyBlock type, BlockPos pos, CallbackInfoReturnable<Boolean> cbi) {
+		if(!CubicChunks.DEBUG_REMOVE_BEFORE_COMMIT) {
+			cbi.setReturnValue(true);
+		}
+	}
+
+
 }

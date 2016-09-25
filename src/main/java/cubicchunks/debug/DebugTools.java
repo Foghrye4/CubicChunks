@@ -23,6 +23,7 @@
  */
 package cubicchunks.debug;
 
+import cubicchunks.debug.item.CheckLightDownwardsItem;
 import cubicchunks.debug.item.RelightSkyBlockItem;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -34,6 +35,7 @@ public class DebugTools {
 	private static DebugProxy proxy;
 
 	public static final Item itemRelightSkyBlock = new RelightSkyBlockItem("relight_sky_block");
+	public static final Item itemCheckLightDownwards = new CheckLightDownwardsItem("check_light_downwards");
 
 	public static final CreativeTabs CUBIC_CHUNKS_DEBUG_TAB = new CreativeTabs("cubic_chunks_debug_tab") {
 		@Override public Item getTabIconItem() {

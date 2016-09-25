@@ -53,6 +53,7 @@ import static cubicchunks.CubicChunks.Config.syncConfig;
 public class CubicChunks {
 
 	public static final boolean DEBUG_ENABLED = System.getProperty("cubicchunks.debug", "false").equalsIgnoreCase("true");
+	public static boolean DEBUG_REMOVE_BEFORE_COMMIT = false;
 	public static Logger LOGGER;
 
 	public static final String MODID = "cubicchunks";

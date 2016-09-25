@@ -26,11 +26,15 @@ package cubicchunks.debug;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import static cubicchunks.debug.DebugTools.CUBIC_CHUNKS_DEBUG_TAB;
+import static cubicchunks.debug.DebugTools.itemCheckLightDownwards;
 import static cubicchunks.debug.DebugTools.itemRelightSkyBlock;
 
 public class DebugProxy {
 	public void initItems() {
 		GameRegistry.register(itemRelightSkyBlock);
 		itemRelightSkyBlock.setCreativeTab(CUBIC_CHUNKS_DEBUG_TAB);
+
+		GameRegistry.register(itemCheckLightDownwards);
+		itemCheckLightDownwards.setCreativeTab(CUBIC_CHUNKS_DEBUG_TAB);
 	}
 }

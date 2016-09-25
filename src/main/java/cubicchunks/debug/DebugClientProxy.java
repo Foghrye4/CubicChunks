@@ -26,6 +26,7 @@ package cubicchunks.debug;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 
+import static cubicchunks.debug.DebugTools.itemCheckLightDownwards;
 import static cubicchunks.debug.DebugTools.itemRelightSkyBlock;
 
 public class DebugClientProxy extends DebugProxy {
@@ -33,5 +34,8 @@ public class DebugClientProxy extends DebugProxy {
 		super.initItems();
 		ModelLoader.setCustomModelResourceLocation(itemRelightSkyBlock, 0,
 				new ModelResourceLocation(itemRelightSkyBlock.getRegistryName(), "inventory"));
+
+		ModelLoader.setCustomModelResourceLocation(itemCheckLightDownwards, 0,
+				new ModelResourceLocation(itemCheckLightDownwards.getRegistryName(), "inventory"));
 	}
 }
