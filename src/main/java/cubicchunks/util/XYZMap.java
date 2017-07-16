@@ -357,6 +357,8 @@ public class XYZMap<T extends XYZAddressable> implements Iterable<T> {
 
         this.pointers[oldLastPointerIndex] = holeIndex;
         this.pointers[holePointerIndex] = 0;
+        this.buckets[holeIndex] = this.buckets[lastElement];
+        size--;
 
         int pointerIndex = this.getNextPointerIndex(holePointerIndex);
         int index = pointers[pointerIndex];
@@ -368,9 +370,6 @@ public class XYZMap<T extends XYZAddressable> implements Iterable<T> {
             pointerIndex = this.getNextPointerIndex(pointerIndex);
             index = pointers[pointerIndex];
         }
-
-        this.buckets[holeIndex] = this.buckets[lastElement];
-        size--;
 
         for (int i = 0; i < nextPointersBuckets.size(); i++) {
             XYZAddressable bucket = nextPointersBuckets.get(i);
