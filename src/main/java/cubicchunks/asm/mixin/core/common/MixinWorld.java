@@ -33,6 +33,7 @@ import cubicchunks.world.ICubeProvider;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.ICubicWorldSettings;
 import cubicchunks.world.NotCubicChunksWorldException;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.cube.Cube;
 import cubicchunks.world.provider.ICubicWorldProvider;
 import mcp.MethodsReturnNonnullByDefault;
@@ -152,7 +153,7 @@ public abstract class MixinWorld implements ICubicWorld {
     }
 
     @Override
-    public boolean testForCubes(CubePos start, CubePos end, Predicate<Cube> cubeAllowed) {
+    public boolean testForCubes(CubePos start, CubePos end, Predicate<Cube> cubeAllowed, Requirement req) {
         // convert block bounds to chunk bounds
         int minCubeX = start.getX();
         int minCubeY = start.getY();
@@ -164,7 +165,7 @@ public abstract class MixinWorld implements ICubicWorld {
         for (int cubeX = minCubeX; cubeX <= maxCubeX; cubeX++) {
             for (int cubeY = minCubeY; cubeY <= maxCubeY; cubeY++) {
                 for (int cubeZ = minCubeZ; cubeZ <= maxCubeZ; cubeZ++) {
-                    Cube cube = this.getCubeCache().getLoadedCube(cubeX, cubeY, cubeZ);
+                    Cube cube = this.getCubeCache().getCube(cubeX, cubeY, cubeZ, req);
                     if (!cubeAllowed.test(cube)) {
                         return false;
                     }

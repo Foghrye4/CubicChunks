@@ -26,6 +26,8 @@ package cubicchunks.server;
 import cubicchunks.CubicChunks;
 import cubicchunks.CubicChunks.Config;
 import cubicchunks.IConfigUpdateListener;
+import cubicchunks.util.CubePos;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.Cube;
 import mcp.MethodsReturnNonnullByDefault;
@@ -85,7 +87,8 @@ public class ChunkGc implements IConfigUpdateListener {
             IColumn storedCol = columnIt.next();
             Collection<Cube> storedColumnCubes = storedCol.getLoadedCubes();
             for (Cube c : storedColumnCubes) {
-                if (cubeCache.getLoadedCube(c.getCoords()) != c) {
+            	CubePos crd = c.getCoords();
+				if (cubeCache.getCube(crd.getX(), crd.getY(), crd.getZ(), Requirement.GET_CACHED) != c) {
                     throw new RuntimeException("Cube in column not the same as stored cube!");
                 }
             }

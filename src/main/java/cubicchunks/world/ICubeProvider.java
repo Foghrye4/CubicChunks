@@ -24,6 +24,7 @@
 package cubicchunks.world;
 
 import cubicchunks.util.CubePos;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.Cube;
 import mcp.MethodsReturnNonnullByDefault;
@@ -41,6 +42,9 @@ public interface ICubeProvider {
     @Nullable
     Cube getLoadedCube(CubePos coords);
 
+    @Nullable
+	Cube getCube(int cubeX, int cubeY, int cubeZ, Requirement req);
+	
     Cube getCube(int cubeX, int cubeY, int cubeZ);
 
     Cube getCube(CubePos coords);

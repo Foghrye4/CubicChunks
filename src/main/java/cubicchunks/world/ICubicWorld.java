@@ -25,6 +25,7 @@ package cubicchunks.world;
 
 import cubicchunks.lighting.LightingManager;
 import cubicchunks.util.CubePos;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.cube.Cube;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.Block;
@@ -82,11 +83,12 @@ public interface ICubicWorld extends IMinMaxHeight {
      * Returns true iff the given Predicate evaluates to true for all cubes for block positions within blockRadius from
      * centerPos. Only cubes that exist are tested. If some cubes within that range aren't loaded - returns false.
      */
-    default boolean testForCubes(BlockPos centerPos, int blockRadius, Predicate<Cube> test) {
+    default boolean testForCubes(BlockPos centerPos, int blockRadius, Predicate<Cube> test, Requirement req) {
         return testForCubes(
                 centerPos.getX() - blockRadius, centerPos.getY() - blockRadius, centerPos.getZ() - blockRadius,
                 centerPos.getX() + blockRadius, centerPos.getY() + blockRadius, centerPos.getZ() + blockRadius,
-                test
+                test,
+                req
         );
     }
 
@@ -95,11 +97,12 @@ public interface ICubicWorld extends IMinMaxHeight {
      * BlockPos(minBlockX, minBlockY, minBlockZ) and BlockPos(maxBlockX, maxBlockY, maxBlockZ) (including the specified
      * positions). Only cubes that exist are tested. If some cubes within that range aren't loaded - returns false.
      */
-    default boolean testForCubes(int minBlockX, int minBlockY, int minBlockZ, int maxBlockX, int maxBlockY, int maxBlockZ, Predicate<Cube> test) {
+    default boolean testForCubes(int minBlockX, int minBlockY, int minBlockZ, int maxBlockX, int maxBlockY, int maxBlockZ, Predicate<Cube> test, Requirement req) {
         return testForCubes(
                 CubePos.fromBlockCoords(minBlockX, minBlockY, minBlockZ),
                 CubePos.fromBlockCoords(maxBlockX, maxBlockY, maxBlockZ),
-                test
+                test,
+                req
         );
     }
 
@@ -107,7 +110,7 @@ public interface ICubicWorld extends IMinMaxHeight {
      * Returns true iff the given Predicate evaluates to true for given cube and neighbors.
      * Only cubes that exist are tested. If some cubes within that range aren't loaded - returns false.
      */
-    boolean testForCubes(CubePos start, CubePos end, Predicate<Cube> test);
+    boolean testForCubes(CubePos start, CubePos end, Predicate<Cube> test, Requirement req);
 
     /**
      * Return the actual world height for this world. Typically this is 256 for worlds with a sky, and 128 for worlds

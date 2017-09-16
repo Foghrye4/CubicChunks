@@ -725,7 +725,11 @@ public class PlayerCubeMap extends PlayerChunkMap implements LightingManager.IHe
     }
 
     @Nullable public CubeWatcher getCubeWatcher(CubePos pos) {
-        return this.cubeWatchers.get(pos.getX(), pos.getY(), pos.getZ());
+        return this.getCubeWatcher(pos.getX(), pos.getY(), pos.getZ());
+    }
+    
+    @Nullable public CubeWatcher getCubeWatcher(int cubeX, int cubeY, int cubeZ) {
+        return this.cubeWatchers.get(cubeX, cubeY, cubeZ);
     }
 
     @Nullable public ColumnWatcher getColumnWatcher(ChunkPos pos) {
@@ -774,12 +778,9 @@ public class PlayerCubeMap extends PlayerChunkMap implements LightingManager.IHe
 
         boolean cubePosChanged() {
             // did the player move far enough to matter?
-            double blockDX = blockToCube(playerEntity.posX) - this.getManagedCubePosX();
-            double blockDY = blockToCube(playerEntity.posY) - this.getManagedCubePosY();
-            double blockDZ = blockToCube(playerEntity.posZ) - this.getManagedCubePosZ();
-
-            double distanceSquared = blockDX * blockDX + blockDY * blockDY + blockDZ * blockDZ;
-            return distanceSquared > 0.9;//0.9 instead of 1 because floating-point numbers may be weird
+			return blockToCube(playerEntity.posX) != this.getManagedCubePosX()
+					|| blockToCube(playerEntity.posY) != this.getManagedCubePosY()
+					|| blockToCube(playerEntity.posZ) != this.getManagedCubePosZ();
         }
     }
 
@@ -791,5 +792,9 @@ public class PlayerCubeMap extends PlayerChunkMap implements LightingManager.IHe
      */
     public Iterator<CubeWatcher> getRandomWrappedCubeWatcherIterator(int seed) {
         return this.cubeWatchers.randomWrappedIterator(seed);
+    }
+    
+    public Iterator<CubeWatcher> getCubeWatcherIterator() {
+        return this.cubeWatchers.iterator();
     }
 }

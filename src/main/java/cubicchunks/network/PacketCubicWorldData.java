@@ -117,7 +117,6 @@ public class PacketCubicWorldData implements IMessage {
         @Nullable @Override
         public IMessage handleClientMessage(EntityPlayer player, PacketCubicWorldData message, MessageContext ctx) {
             PacketUtils.ensureMainThread(this, player, message, ctx);
-
             if (Minecraft.getMinecraft().getConnection() != null) {
                 WorldClient world = Minecraft.getMinecraft().getConnection().clientWorldController;
                 // initialize only if sending packet about cubic world, but not when already initialized
