@@ -60,13 +60,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @MethodsReturnNonnullByDefault
 public class CubeWatcher implements XYZAddressable, ITicket {
 
-    private final Consumer<Cube> consumer = (c) -> {
-        this.cube = c;
-        this.loading = false;
-        if (this.cube != null) {
-            this.cube.getTickets().add(this);
-        }
-    };
+    private final Consumer<Cube> consumer;
     private final CubeProviderServer cubeCache;
     private PlayerCubeMap playerCubeMap;
     @Nullable private Cube cube;
@@ -81,6 +75,14 @@ public class CubeWatcher implements XYZAddressable, ITicket {
     CubeWatcher(PlayerCubeMap playerCubeMap, CubePos cubePos) {
         this.playerCubeMap = playerCubeMap;
         this.cubeCache = playerCubeMap.getWorld().getCubeCache();
+        this.consumer = (c) -> {
+            this.cube = c;
+            this.loading = false;
+            if (this.cube != null) {
+                this.cube.getTickets().add(this);
+                this.cubeCache.watch(this.cube);
+            }
+        };
         this.cubeCache.asyncGetCube(
                 cubePos.getX(), cubePos.getY(), cubePos.getZ(),
                 IProviderExtras.Requirement.LOAD,

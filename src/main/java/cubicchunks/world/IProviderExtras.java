@@ -68,6 +68,10 @@ public interface IProviderExtras {
         // Warning, don't modify order of these constants - ordinals are used in comparisons
         // TODO write a custom compare method
         /**
+         * Only retrieve the cube/column if it is watched by cube watcher (i.e. was sent to client)
+         */
+    	GET_WATCHED,
+        /**
          * Only retrieve the cube/column if it is already cached
          */
         GET_CACHED,
