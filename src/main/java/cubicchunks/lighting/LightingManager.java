@@ -40,11 +40,15 @@ import gnu.trove.iterator.TIntIterator;
 import gnu.trove.set.TIntSet;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -204,25 +208,37 @@ public class LightingManager {
             if (!this.hasUpdates) {
                 return;
             }
+            int minLocalX = Cube.SIZE - 1;
+            int minLocalZ = Cube.SIZE - 1;
+            int maxLocalX = 0;
+            int maxLocalZ = 0;
             for (int localX = 0; localX < Cube.SIZE; localX++) {
                 for (int localZ = 0; localZ < Cube.SIZE; localZ++) {
                     if (!toUpdateColumns[index(localX, localZ)]) {
                         continue;
                     }
-                    boolean success = cube.getCubicWorld().getLightingManager().relightMultiBlock(
-                            new BlockPos(localToBlock(cube.getX(), localX), cubeToMinBlock(cube.getY()), localToBlock(cube.getZ(), localZ)),
-                            new BlockPos(localToBlock(cube.getX(), localX), cubeToMaxBlock(cube.getY()), localToBlock(cube.getZ(), localZ)),
-                            EnumSkyBlock.SKY
-                    );
-                    if (!success) {
-                        return;
-                    }
+                    if(localX < minLocalX)
+                    	minLocalX = localX;
+                    if(localZ < minLocalZ)
+                    	minLocalZ = localZ;
+                    if(localX > maxLocalX)
+                    	maxLocalX = localX;
+                    if(localZ > maxLocalZ)
+                    	maxLocalZ = localZ;
                     toUpdateColumns[index(localX, localZ)] = false;
                 }
             }
+            boolean success = cube.getCubicWorld().getLightingManager().relightMultiBlock(
+                    new BlockPos(localToBlock(cube.getX(), minLocalX), cubeToMinBlock(cube.getY()), localToBlock(cube.getZ(), minLocalZ)),
+                    new BlockPos(localToBlock(cube.getX(), maxLocalX), cubeToMaxBlock(cube.getY()), localToBlock(cube.getZ(), maxLocalZ)),
+                    EnumSkyBlock.SKY
+            );
+            if (!success) {
+                return;
+            }
             this.hasUpdates = false;
         }
-
+        
         private int index(int x, int z) {
             return x << 4 | z;
         }
