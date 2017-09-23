@@ -13,6 +13,7 @@
         "common.MixinWorldServer",
         "common.MixinWorld_HeightLimits",
         "common.MixinChunkCache_HeightLimits",
+        "common.MixinChunkCache",
         "common.MixinEntity_DeathFix",
         "common.MixinWorldProvider",
         "common.MixinPlayerList",
