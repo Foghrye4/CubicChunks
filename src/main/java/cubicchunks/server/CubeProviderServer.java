@@ -84,6 +84,7 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
 
     @Nonnull private ICubeGenerator cubeGen;
     @Nonnull private Profiler profiler;
+    
     private final boolean doRandomBlockTicksHere;
 
     public CubeProviderServer(ICubicWorldServer worldServer, ICubeGenerator cubeGen) {
@@ -194,18 +195,23 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
     @Override
     public boolean tick() {
         // NOTE: the return value is completely ignored
-        profiler.startSection("providerTick("+cubeMap.getSize()+")");
+        profiler.startSection("providerTick");
         long i = System.currentTimeMillis();
         int randomTickSpeed = this.world.getGameRules().getInt("randomTickSpeed");
         Random rand = this.world.rand;
-        for (Cube cube : cubeMap) {
-            cube.tickCubeServer(() -> System.currentTimeMillis() - i > 40, rand);
-            if (cube.isEmpty() || !doRandomBlockTicksHere)
-                continue;
-            int randomTickCounter = randomTickSpeed;
-            while (randomTickCounter-- > 0)
-                cube.randomTick(this.world, rand);
-        }
+        PlayerCubeMap playerCubeMap = ((PlayerCubeMap)this.world.getPlayerChunkMap());
+        Iterator<CubeWatcher> watchersIterator = playerCubeMap.getCubeWatcherIterator();
+		while (watchersIterator.hasNext()) {
+			Cube cube = watchersIterator.next().getCube();
+			if (cube == null)
+				continue;
+			cube.tickCubeServer(() -> System.currentTimeMillis() - i > 40, rand);
+			if (cube.isEmpty() || !doRandomBlockTicksHere)
+				continue;
+			int randomTickCounter = randomTickSpeed;
+			while (randomTickCounter-- > 0)
+				cube.randomTick(this.world, rand);
+		}
         profiler.endSection();
         return false;
     }
@@ -276,7 +282,7 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
      * @see #getCube(int, int, int, Requirement) for the synchronous equivalent to this method
      */
     public void asyncGetCube(int cubeX, int cubeY, int cubeZ, Requirement req, Consumer<Cube> callback) {
-        Cube cube = getLoadedCube(cubeX, cubeY, cubeZ);
+        Cube cube = cubeMap.get(cubeX, cubeY, cubeZ);
         if (req == Requirement.GET_CACHED || (cube != null && req.compareTo(Requirement.GENERATE) <= 0)) {
             callback.accept(cube);
             return;
@@ -296,7 +302,16 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
 
     @Nullable @Override
     public Cube getCube(int cubeX, int cubeY, int cubeZ, Requirement req) {
-        Cube cube = getLoadedCube(cubeX, cubeY, cubeZ);
+    	if (req == Requirement.GET_WATCHED){
+            PlayerCubeMap playerCubeMap = ((PlayerCubeMap)this.world.getPlayerChunkMap());
+    		CubeWatcher cubeWatcher = playerCubeMap.getCubeWatcher(cubeX, cubeY, cubeZ);
+    		if(cubeWatcher == null)
+        		return null;
+    		else
+    			return cubeWatcher.getCube();
+    	}
+    	
+        Cube cube = cubeMap.get(cubeX, cubeY, cubeZ);
         if (req == Requirement.GET_CACHED ||
                 (cube != null && req.compareTo(Requirement.GENERATE) <= 0)) {
             return cube;
@@ -326,7 +341,7 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
      */
     private void onCubeLoaded(@Nullable Cube cube, IColumn column) {
         if (cube != null) {
-            cubeMap.put(cube); // cache the Cube
+			cubeMap.put(cube); // cache the Cube
             //synchronous loading may cause it to be called twice when async loading has been already queued
             //because AsyncWorldIOExecutor only executes one task for one cube and because only saving a cube
             //can modify one that is being loaded, it's impossible to end up with 2 versions of the same cube
@@ -356,7 +371,7 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
         // change the async load request result, so the cube here will still be null. Just to make sure, get the cube here
         // otherwise we may end up generating the same cube twice
         if (cube == null) {
-            cube = getLoadedCube(cubeX, cubeY, cubeZ);
+            cube = cubeMap.get(cubeX, cubeY, cubeZ);
         }
         // Fast path - Nothing to do here
         if (req == Requirement.LOAD) {
@@ -596,7 +611,7 @@ public class CubeProviderServer extends ChunkProviderServer implements ICubeProv
 
         // unload the Cube!
         cube.onUnload();
-
+        
         if (cube.needsSaving()) { // save the Cube, if it needs saving
             this.cubeIO.saveCube(cube);
         }

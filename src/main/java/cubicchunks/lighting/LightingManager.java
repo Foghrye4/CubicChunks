@@ -33,6 +33,7 @@ import cubicchunks.util.Coords;
 import cubicchunks.util.CubePos;
 import cubicchunks.util.FastCubeBlockAccess;
 import cubicchunks.world.ICubicWorld;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.BlankCube;
 import cubicchunks.world.cube.Cube;
@@ -178,7 +179,7 @@ public class LightingManager {
         BlockPos maxLoad = endPos.add(LOAD_RADIUS, LOAD_RADIUS, LOAD_RADIUS);
 
         if (!world.testForCubes(CubePos.fromBlockCoords(minLoad), CubePos.fromBlockCoords(maxLoad),
-                c -> c != null && !(c instanceof BlankCube))) {
+                c -> c != null && !(c instanceof BlankCube), Requirement.GET_CACHED)) {
             return false;
         }
         ILightBlockAccess blocks = FastCubeBlockAccess.forBlockRegion(world.getCubeCache(), minLoad, maxLoad);

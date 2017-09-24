@@ -31,6 +31,7 @@ import cubicchunks.lighting.ILightBlockAccess;
 import cubicchunks.server.CubeProviderServer;
 import cubicchunks.world.ICubeProvider;
 import cubicchunks.world.ICubicWorld;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.Cube;
 import mcp.MethodsReturnNonnullByDefault;
@@ -87,7 +88,7 @@ public class FastCubeBlockAccess implements ILightBlockAccess {
             for (int relativeCubeZ = 0; relativeCubeZ < dz; relativeCubeZ++) {
                 for (int relativeCubeY = 0; relativeCubeY < dy; relativeCubeY++) {
                     Cube cube =
-                            prov.getLoadedCube(originX + relativeCubeX, originY + relativeCubeY, originZ + relativeCubeZ);
+                            prov.getCube(originX + relativeCubeX, originY + relativeCubeY, originZ + relativeCubeZ, Requirement.GET_CACHED);
 
                     if (cube == null) {
                         CrashReport report = CrashReport.makeCrashReport(

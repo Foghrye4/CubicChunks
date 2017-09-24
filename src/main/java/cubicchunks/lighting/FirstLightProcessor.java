@@ -35,6 +35,7 @@ import cubicchunks.world.ICubeProvider;
 import cubicchunks.world.ICubicWorld;
 import cubicchunks.world.ICubicWorldServer;
 import cubicchunks.world.IHeightMap;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.Cube;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -325,7 +326,7 @@ public class FirstLightProcessor {
      */
     private static boolean canUpdateCube(@Nonnull Cube cube) {
         BlockPos cubeCenter = getCubeCenter(cube);
-        return cube.getCubicWorld().testForCubes(cubeCenter, UPDATE_RADIUS, Objects::nonNull);
+        return cube.getCubicWorld().testForCubes(cubeCenter, UPDATE_RADIUS, Objects::nonNull, Requirement.GET_WATCHED);
     }
 
     /**

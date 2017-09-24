@@ -28,6 +28,7 @@ import cubicchunks.util.CubePos;
 import cubicchunks.util.XYZMap;
 import cubicchunks.world.ICubeProvider;
 import cubicchunks.world.ICubicWorldClient;
+import cubicchunks.world.IProviderExtras.Requirement;
 import cubicchunks.world.column.IColumn;
 import cubicchunks.world.cube.BlankCube;
 import cubicchunks.world.cube.Cube;
@@ -152,6 +153,14 @@ public class CubeProviderClient extends ChunkProviderClient implements ICubeProv
         }
         return cube;
     }
+    
+	@Override
+	@Nullable
+	public Cube getCube(int cubeX, int cubeY, int cubeZ, Requirement req) {
+		if (req.compareTo(Requirement.GET_CACHED) <= 0)
+			return this.getLoadedCube(cubeX, cubeY, cubeZ);
+		return this.getCube(cubeX, cubeY, cubeZ);
+	}
 
     @Override
     public Cube getCube(CubePos coords) {
