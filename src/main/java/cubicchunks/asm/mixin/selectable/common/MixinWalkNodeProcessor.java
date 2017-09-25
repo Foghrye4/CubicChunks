@@ -24,22 +24,29 @@
 package cubicchunks.asm.mixin.selectable.common;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import cubicchunks.world.ICubicWorld;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.pathfinding.NodeProcessor;
+import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.pathfinding.WalkNodeProcessor;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 @ParametersAreNonnullByDefault
@@ -73,5 +80,10 @@ public abstract class MixinWalkNodeProcessor extends NodeProcessor {
             return false;
         }
         return worldIn.collidesWithAnyBlock(aabb);
+    }
+    
+    @ModifyArg(method = "getPathNodeType(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraft/entity/EntityLiving;IIIZZ)Lnet/minecraft/pathfinding/PathNodeType;", at = @At(value = "INVOKE", target = "getPathNodeType(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraft/entity/EntityLiving;IIIZZLjava/util/EnumSet;Lnet/minecraft/pathfinding/PathNodeType;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/pathfinding/PathNodeType;"))
+    public IBlockAccess getPathNodeTypeFromOwnBlockAccess(IBlockAccess world) {
+        return this.blockaccess;
     }
 }
