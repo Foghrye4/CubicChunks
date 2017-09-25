@@ -31,6 +31,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import mcp.MethodsReturnNonnullByDefault;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.util.math.BlockPos;
@@ -43,31 +44,26 @@ import net.minecraft.world.World;
 public abstract class MixinPathNavigate {
 	@Shadow
 	protected EntityLiving entity;
-	private ChunkCache chunkCache = null;
-	private int lastCubePosX = 0;
-	private int lastCubePosY = 0;
-	private int lastCubePosZ = 0;
 
 	@Redirect(method = "getPathToPos", at = @At(value = "NEW", target = "net/minecraft/world/ChunkCache"))
-	private ChunkCache newChunkCacheToPosRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn) {
-		this.updateChunkCache(worldIn, posFromIn, posToIn, subIn);
-		return chunkCache;
+	private ChunkCache newChunkCacheToPosRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn, BlockPos target) {
+	    int x1 = (int)entity.posX;
+        int y1 = (int)entity.posY;
+        int z1 = (int)entity.posZ;
+        int x2 = target.getX();
+        int y2 = target.getY();
+        int z2 = target.getZ();
+        return new ChunkCache(worldIn, new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)), new BlockPos(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2)), subIn);
 	}
 	
 	@Redirect(method = "getPathToEntityLiving", at = @At(value = "NEW", target = "net/minecraft/world/ChunkCache"))
-	private ChunkCache newChunkCacheToLivingRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn) {
-		this.updateChunkCache(worldIn, posFromIn, posToIn, subIn);
-		return chunkCache;
-	}
-	
-	
-	private void updateChunkCache(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn){
-		if (chunkCache == null || lastCubePosX != entity.chunkCoordX || lastCubePosY != entity.chunkCoordY
-				|| lastCubePosZ != entity.chunkCoordZ) {
-			chunkCache = new ChunkCache(worldIn, posFromIn, posToIn, subIn);
-			lastCubePosX = entity.chunkCoordX;
-			lastCubePosY = entity.chunkCoordY;
-			lastCubePosZ = entity.chunkCoordZ;
-		}
+	private ChunkCache newChunkCacheToLivingRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn, Entity target) {
+        int x1 = (int)entity.posX;
+        int y1 = (int)entity.posY;
+        int z1 = (int)entity.posZ;
+        int x2 = (int)target.posX;
+        int y2 = (int)target.posY;
+        int z2 = (int)target.posZ;
+        return new ChunkCache(worldIn, new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)), new BlockPos(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2)), subIn);
 	}
 }

@@ -37,10 +37,12 @@ import cubicchunks.util.Coords;
 import cubicchunks.util.CubePos;
 import cubicchunks.world.ICubeProvider;
 import cubicchunks.world.ICubicWorld;
+import cubicchunks.world.cube.BlankCube;
 import cubicchunks.world.cube.Cube;
 import cubicchunks.world.type.ICubicWorldType;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ChunkCache;
 import net.minecraft.world.World;
@@ -58,6 +60,10 @@ public class MixinChunkCache {
 	private int originY;
 	private int originZ;
 	boolean isCubic = false;
+    private int dx;
+    private int dy;
+    private int dz;
+    private IBlockState air = Blocks.AIR.getDefaultState();
 
 	@Inject(method = "<init>", at = @At("RETURN"))
 	public void initChunkCache(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn, CallbackInfo ci) {
@@ -68,9 +74,9 @@ public class MixinChunkCache {
 		this.isCubic = true;
 		CubePos start = CubePos.fromBlockCoords(posFromIn.add(-subIn, -subIn, -subIn));
 		CubePos end = CubePos.fromBlockCoords(posToIn.add(subIn, subIn, subIn));
-		int dx = Math.abs(end.getX() - start.getX()) + 1;
-		int dy = Math.abs(end.getY() - start.getY()) + 1;
-		int dz = Math.abs(end.getZ() - start.getZ()) + 1;
+		dx = Math.abs(end.getX() - start.getX()) + 1;
+		dy = Math.abs(end.getY() - start.getY()) + 1;
+		dz = Math.abs(end.getZ() - start.getZ()) + 1;
 		ICubeProvider prov = (ICubeProvider) worldIn.getChunkProvider();
 		this.cubes = new Cube[dx][dy][dz];
 		this.originX = Math.min(start.getX(), end.getX());
@@ -90,18 +96,19 @@ public class MixinChunkCache {
 	public void getBlockState(BlockPos pos, CallbackInfoReturnable<IBlockState> cir) {
 		if (!this.isCubic)
 			return;
-		int worldBlockX = pos.getX();
-		int worldBlockY = pos.getY();
-		int worldBlockZ = pos.getZ();
-		Cube cube = this.getCube(worldBlockX, worldBlockY, worldBlockZ);
-		cir.setReturnValue(cube.getBlockState(worldBlockX, worldBlockY, worldBlockZ));
+		int blockX = pos.getX();
+		int blockY = pos.getY();
+		int blockZ = pos.getZ();
+        int cubeX = Coords.blockToCube(blockX) - originX;
+        int cubeY = Coords.blockToCube(blockY) - originY;
+        int cubeZ = Coords.blockToCube(blockZ) - originZ;
+        if (cubeX < 0 || cubeX >= dx || cubeY < 0 || cubeY >= dy || cubeZ < 0 || cubeZ >= dz) {
+            cir.setReturnValue(air);
+            cir.cancel();
+            return;
+        }
+		Cube cube = this.cubes[cubeX][cubeY][cubeZ];
+		cir.setReturnValue(cube.getBlockState(blockX, blockY, blockZ));
 		cir.cancel();
-	}
-
-	private Cube getCube(int blockX, int blockY, int blockZ) {
-		int cubeX = Coords.blockToCube(blockX);
-		int cubeY = Coords.blockToCube(blockY);
-		int cubeZ = Coords.blockToCube(blockZ);
-		return this.cubes[cubeX - originX][cubeY - originY][cubeZ - originZ];
 	}
 }
