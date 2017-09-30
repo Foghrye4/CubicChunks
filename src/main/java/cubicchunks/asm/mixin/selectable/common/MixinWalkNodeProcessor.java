@@ -34,6 +34,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import cubicchunks.world.ICubicWorld;
@@ -82,7 +83,7 @@ public abstract class MixinWalkNodeProcessor extends NodeProcessor {
         return worldIn.collidesWithAnyBlock(aabb);
     }
     
-    @ModifyArg(method = "getPathNodeType(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraft/entity/EntityLiving;IIIZZ)Lnet/minecraft/pathfinding/PathNodeType;", at = @At(value = "INVOKE", target = "getPathNodeType(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraft/entity/EntityLiving;IIIZZLjava/util/EnumSet;Lnet/minecraft/pathfinding/PathNodeType;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/pathfinding/PathNodeType;"))
+    @ModifyVariable(method = "getPathNodeType", at = @At("HEAD"))
     public IBlockAccess getPathNodeTypeFromOwnBlockAccess(IBlockAccess world) {
         return this.blockaccess;
     }

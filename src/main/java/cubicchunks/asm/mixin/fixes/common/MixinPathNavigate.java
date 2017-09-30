@@ -28,13 +28,19 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.lib.Opcodes;
 
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.pathfinding.NodeProcessor;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.ChunkCache;
 import net.minecraft.world.World;
 
@@ -42,28 +48,56 @@ import net.minecraft.world.World;
 @MethodsReturnNonnullByDefault
 @Mixin(PathNavigate.class)
 public abstract class MixinPathNavigate {
-	@Shadow
-	protected EntityLiving entity;
 
-	@Redirect(method = "getPathToPos", at = @At(value = "NEW", target = "net/minecraft/world/ChunkCache"))
-	private ChunkCache newChunkCacheToPosRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn, BlockPos target) {
-	    int x1 = (int)entity.posX;
-        int y1 = (int)entity.posY;
-        int z1 = (int)entity.posZ;
+    @Shadow protected EntityLiving entity;
+    @Shadow protected NodeProcessor nodeProcessor;
+    @Shadow protected Path currentPath;
+    @Shadow protected World world;
+
+    @Shadow
+    protected abstract Vec3d getEntityPosition();
+
+    @Redirect(method = "getPathToPos", at = @At(value = "NEW", target = "net/minecraft/world/ChunkCache"))
+    private ChunkCache newChunkCacheToPosRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn, BlockPos target) {
+        int x1 = (int) entity.posX;
+        int y1 = (int) entity.posY;
+        int z1 = (int) entity.posZ;
         int x2 = target.getX();
         int y2 = target.getY();
         int z2 = target.getZ();
-        return new ChunkCache(worldIn, new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)), new BlockPos(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2)), subIn);
-	}
-	
-	@Redirect(method = "getPathToEntityLiving", at = @At(value = "NEW", target = "net/minecraft/world/ChunkCache"))
-	private ChunkCache newChunkCacheToLivingRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn, Entity target) {
-        int x1 = (int)entity.posX;
-        int y1 = (int)entity.posY;
-        int z1 = (int)entity.posZ;
-        int x2 = (int)target.posX;
-        int y2 = (int)target.posY;
-        int z2 = (int)target.posZ;
-        return new ChunkCache(worldIn, new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)), new BlockPos(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2)), subIn);
-	}
+        return new ChunkCache(worldIn, new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)),
+                new BlockPos(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2)), subIn);
+    }
+
+    @Redirect(method = "getPathToEntityLiving", at = @At(value = "NEW", target = "net/minecraft/world/ChunkCache"))
+    private ChunkCache newChunkCacheToLivingRedirect(World worldIn, BlockPos posFromIn, BlockPos posToIn, int subIn, Entity target) {
+        int x1 = (int) entity.posX;
+        int y1 = (int) entity.posY;
+        int z1 = (int) entity.posZ;
+        int x2 = (int) target.posX;
+        int y2 = (int) target.posY;
+        int z2 = (int) target.posZ;
+        return new ChunkCache(worldIn, new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)),
+                new BlockPos(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2)), subIn);
+    }
+
+    @Inject(method = "pathFollow", at = @At("HEAD"))
+    private void pathFollowInitWalkNodeProcessor(CallbackInfo ci) {
+        Vec3d vec1 = this.getEntityPosition();
+        Vec3d vec2 = this.currentPath.getVectorFromIndex(this.entity, this.currentPath.getCurrentPathLength() - 1);
+        int x1 = (int) vec1.x;
+        int y1 = (int) vec1.y;
+        int z1 = (int) vec1.z;
+        int x2 = (int) vec2.x;
+        int y2 = (int) vec2.y;
+        int z2 = (int) vec2.z;
+        ChunkCache chunkCache = new ChunkCache(world, new BlockPos(Math.min(x1, x2), Math.min(y1, y2), Math.min(z1, z2)),
+                new BlockPos(Math.max(x1, x2), Math.max(y1, y2), Math.max(z1, z2)), 1);
+        this.nodeProcessor.initProcessor(chunkCache, entity);
+    }
+
+    @Inject(method = "pathFollow", at = @At("RETURN"))
+    private void pathFollowShutWalkNodeProcessor(CallbackInfo ci) {
+        this.nodeProcessor.postProcess();
+    }
 }
